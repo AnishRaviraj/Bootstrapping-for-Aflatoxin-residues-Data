@@ -1,0 +1,235 @@
+---
+title: "R Notebook"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+```{r}
+hist(atp_matches_2018$w_ace)
+
+library(tidyverse)
+WinnerACE18<-atp_matches_2018 %>% select(w_ace, best_of) %>% filter(best_of=="3") #dropping 5 set macthes
+summary(WinnerACE18$w_ace)
+WinnerACE18<-na.omit(WinnerACE18) #removes missing values
+
+quantile(WinnerACE18$w_ace,c(.1, .9))
+
+WinnerACE18<-filter(WinnerACE18, w_ace<16, w_ace>2) #trimming data
+glimpse(WinnerACE18)
+
+summary(WinnerACE18)
+
+mean(WinnerACE18$w_ace)
+sd(WinnerACE18$w_ace)
+median(WinnerACE18$w_ace)
+hist(WinnerACE18$w_ace)
+abline(v=mean(WinnerACE18$w_ace), main= "Histogram of Winner's Ace Count For 2018")
+```
+
+Bootstrap for mean amount of winner's aces.
+```{r}
+Wace_mean=NULL
+Wace_median=NULL
+B=10^4
+
+for (i in 1:B) {
+  Wace_BS=sample(WinnerACE18$w_ace, 1710, replace=T)
+  Wace_mean[i]=mean(Wace_BS)
+  Wace_median[i]=median(Wace_BS)
+}
+
+mean(WinnerACE18$w_ace)
+mean(Wace_mean)
+
+
+par(mfrow=c(2,1))
+hist(WinnerACE18$w_ace, main = "Histogram of Winner's Ace Count for 2018")
+abline(v=mean(WinnerACE18$w_ace), col="red", lty=2)
+hist(Wace_mean, main = "Histogram of Bootstrap of Winner's Ace Count for 2018")
+abline(v=mean(Wace_mean), col="red", lty=2)
+
+#data is now normal
+
+```
+
+
+```{r}
+LoserACE18<-atp_matches_2018 %>% select(l_ace, best_of)
+LoserACE18<-filter(LoserACE18, best_of=="3")
+summary(LoserACE18$l_ace)
+LoserACE18<-na.omit(LoserACE18)
+
+quantile(LoserACE18$l_ace,c(.1, .9))
+
+LoserACE18<-filter(LoserACE18, l_ace<12, l_ace>0) #trim
+glimpse(LoserACE18)
+
+summary(LoserACE18)
+
+mean(LoserACE18$l_ace)
+sd(LoserACE18$l_ace)
+median(LoserACE18$l_ace)
+hist(LoserACE18$l_ace)
+abline(v=mean(LoserACE18$l_ace), main = "Histogram of Loser's Ace Count for 2018")
+```
+
+
+Bootstrap for mean amount of loser's aces.
+```{r}
+Lace_mean=NULL
+Lace_median=NULL
+B=10^4
+
+for (i in 1:B) {
+  Lace_BS=sample(LoserACE18$l_ace, 1930, replace=T)
+  Lace_mean[i]=mean(Lace_BS)
+  Lace_median[i]=median(Lace_BS)
+}
+
+
+
+mean(LoserACE18$l_ace)
+mean(Lace_mean)
+
+
+par(mfrow=c(2,1))
+hist(LoserACE18$l_ace, main = "Histogram of Loser's Aces for 2018")
+abline(v=mean(LoserACE18$l_ace), col="red", lty=2)
+hist(Lace_mean, main = "Histogram of Bootstrap  of Loser's Aces for 2018")
+abline(v=mean(Lace_mean), col="red", lty=2)
+```
+
+```{r}
+B=10^4
+diff_mean=numeric(B) #Same as using NULL
+for(i in 1:B)
+{
+  w.sample=sample(WinnerACE18$w_ace, 1710, T) 
+  l.sample=sample(LoserACE18$l_ace, 1930, T)
+  diff_mean[i]=mean(w.sample)- mean(l.sample)
+}
+hist(diff_mean, main = "Histogram of Bootstrap for Differences in Mean Between \nWinner's and Loser's Ace Count in 2018")
+abline(v=mean(WinnerACE18$w_ace)-mean(LoserACE18$l_ace), col="blue", lty=2)
+
+quantile(diff_mean, c(0.025, 0.975)) #95% BS Percentile CI
+```
+
+```{r}
+library(tidyverse)
+surfaceACE18<-atp_matches_2018 %>% select(w_ace, best_of, surface) 
+
+hard18<-filter(surfaceACE18, best_of=="3", surface=="Hard")
+hard18<-na.omit(hard18) #Gets rid of missing values
+
+hist(hard18$w_ace) # still skewed, but not as skewed
+summary(hard18$w_ace)
+
+quantile(hard18$w_ace,c(.1, .9))
+
+hard18<-filter(hard18, w_ace<15, w_ace>1) 
+
+summary(hard18)
+
+mean(hard18$w_ace)
+sd(hard18$w_ace)
+median(hard18$w_ace)
+hist(hard18$w_ace,main =  "Histogram of Winner's Ace Count for Hard Court") #now trimmed
+abline(v=mean(hard18$w_ace))
+```
+
+```{r}
+grass18<-filter(surfaceACE18, best_of=="3", surface=="Grass")
+grass18<-na.omit(hard18)
+
+hist(grass18$w_ace)
+summary(grass18$w_ace)
+
+quantile(grass18$w_ace,c(.1, .9))
+
+hard18<-filter(grass18, w_ace<17, w_ace>2) 
+
+summary(grass18)
+
+mean(grass18$w_ace)
+sd(grass18$w_ace)
+median(grass18$w_ace)
+hist(grass18$w_ace, main =  "Histogram of Winner's Ace Count for Grass Court") #now trimmed
+abline(v=mean(grass18$w_ace))
+```
+
+```{r}
+clay18<-filter(surfaceACE18, best_of=="3", surface=="Clay")
+clay18<-na.omit(clay18)
+
+hist(clay18$w_ace)
+summary(clay18$w_ace)
+
+quantile(clay18$w_ace,c(.1, .9))
+
+clay18<-filter(clay18, w_ace<15, w_ace>1) 
+
+summary(clay18)
+
+mean(clay18$w_ace)
+sd(clay18$w_ace)
+median(clay18$w_ace)
+hist(clay18$w_ace, main =  "Histogram of Winner's Ace Count for Clay Court") #now trimmed
+abline(v=mean(clay18$w_ace))
+```
+
+
+Hard court vs Grass court
+```{r}
+B=10^4
+hg_diff_mean=numeric(B) #Same as using NULL
+for(i in 1:B)
+{
+  hard.sample=sample(hard18$w_ace, 1359, T)
+  grass.sample=sample(grass18$w_ace, 165, T)
+  hg_diff_mean[i]=mean(hard.sample)- mean(grass.sample)
+}
+hist(hg_diff_mean, main="Histogram of Bootstrap for Difference in Means of Ace Count \nfor the Winner on Hard Court vs. Grass Court")
+abline(v=mean(hard18$w_ace)-mean(grass18$w_ace), col="blue", lty=2)
+
+quantile(hg_diff_mean, c(0.025, 0.975)) #95% BS Percentile CI
+
+#We do not hav esufficient evidence of there being a different betweem the mean amount of aces for the winner of a hard court match and te winner on a grass court (zero is in interval)
+```
+
+```{r}
+B=10^4
+hc_diff_mean=numeric(B) #Same as using NULL
+for(i in 1:B)
+{
+  hard.sample=sample(hard18$w_ace, 1359, T)
+  clay.sample=sample(clay18$w_ace, 536, T)
+  hc_diff_mean[i]=mean(hard.sample)- mean(clay.sample)
+}
+hist(hc_diff_mean, main="Histogram of Bootstrap for Difference in Means of Ace Count \nfor the Winner on Hard Court vs. Clay Court")
+abline(v=mean(hard18$w_ace)-mean(clay18$w_ace), col="blue", lty=2)
+
+quantile(hc_diff_mean, c(0.025, 0.975)) #95% BS Percentile CI
+
+#We do have significant evidence of there being a different between the mean amount of aces for the winner of a hard court match and te winner on a clay court. We are 95% that, on average, the winner of a hard court will have between 1.71 and 2.31 aces than the winner of a clay court match.
+```
+
+```{r}
+B=10^4
+gc_diff_mean=numeric(B) #Same as using NULL
+for(i in 1:B)
+{
+  grass.sample=sample(grass18$w_ace, 150, T)
+  clay.sample=sample(clay18$w_ace, 536, T)
+  gc_diff_mean[i]=mean(grass.sample)- mean(clay.sample)
+}
+hist(gc_diff_mean, main="Histogram of Bootstrap for Difference in Means of Ace Count \nfor the Winner on Grass Court vs. Clay Court")
+abline(v=mean(grass18$w_ace)-mean(clay18$w_ace), col="blue", lty=2)
+
+quantile(gc_diff_mean, c(0.025, 0.975)) #95% BS Percentile CI
+
+#We do have significant evidence of there being a different between the mean amount of aces for the winner of a hard court match and te winner on a clay court. We are 95% that, on average, the winner of a grass court will have between 1.43 and 2.57 aces than the winner of a clay court match. (larger confidence interval than last one)
+
+```
+
+
